@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCS LLM Agent MVP (User-Controlled)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="p-4 flex items-center justify-center min-h-screen">
+    <div class="container mx-auto p-6 card">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Perceptual Cognition Simulator MVP (User-Controlled)</h1>
+        <p class="text-center text-gray-600 mb-8">
+            Choose the cognitive mode for the AI agent to process your task, and define a specific domain.
+        </p>
+
+        <div class="mb-4">
+            <label for="domainInput" class="block text-gray-700 text-sm font-bold mb-2">Domain (e.g., Medical, Legal, Engineering):</label>
+            <input type="text" id="domainInput" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="e.g., Medical">
+        </div>
+
+        <div class="mb-6">
+            <label for="subDomainInput" class="block text-gray-700 text-sm font-bold mb-2">Sub-Domain (Optional, e.g., Diagnosis, Contract Law):</label>
+            <input type="text" id="subDomainInput" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="e.g., Diagnosis">
+        </div>
+
+        <div class="mb-6">
+            <label for="taskInput" class="block text-gray-700 text-sm font-bold mb-2">Enter your task:</label>
+            <textarea id="taskInput" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent h-24" placeholder="Try: 'What is 15 * 7?', 'Can a dog fly?', or copy the full 'Three perfect logicians...' puzzle. Unknown tasks default to intuitive."></textarea>
+        </div>
+
+        <div class="mb-6">
+            <label for="modeSelector" class="block text-gray-700 text-sm font-bold mb-2">Choose Cognitive Mode:</label>
+            <select id="modeSelector" class="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <option value="reasoning">Reasoning (Detailed Steps)</option>
+                <option value="intuitive">Intuitive (Concise Answer)</option>
+            </select>
+        </div>
+
+        <div class="flex justify-center mb-8">
+            <button id="submitTask" class="btn-primary flex items-center">
+                Process Task
+                <div id="loadingSpinner" class="loading-spinner ml-3 hidden"></div>
+            </button>
+        </div>
+
+        <div id="results" class="space-y-4">
+            <div class="card p-4 border border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Selected Cognitive Mode: <span id="modeDisplay" class="font-normal text-indigo-600">N/A</span></h3>
+                <p class="text-gray-700"><strong>Domain:</strong> <span id="domainDisplay" class="font-normal">N/A</span></p>
+                <p class="text-gray-700"><strong>Sub-Domain:</strong> <span id="subDomainDisplay" class="font-normal">N/A</span></p>
+                <p class="text-gray-700 mt-2"><strong>LLM Response:</strong></p>
+                <div id="responseDisplay" class="bg-gray-50 p-3 rounded-md text-gray-800 whitespace-pre-wrap max-h-96 overflow-y-auto">N/A</div>
+                <p class="text-gray-700 mt-2"><strong>Latency:</strong> <span id="latencyDisplay" class="font-medium">N/A</span></p>
+                <p class="text-gray-700"><strong>Tokens Used:</strong> <span id="tokensDisplay" class="font-medium">N/A</span></p>
+                <p class="text-gray-700"><strong>Accuracy (Simplified):</strong> <span id="accuracyDisplay" class="font-medium">N/A</span></p>
+                <p class="text-gray-700"><strong>Semantic Similarity (Simplified):</strong> <span id="semanticSimilarityDisplay" class="font-medium">N/A</span></p>
+                <p class="text-gray-700"><strong>Reasoning Process Quality:</strong> <span id="reasoningProcessQualityDisplay" class="font-medium">N/A</span></p>
+                <p class="text-gray-700"><strong>Combined Score:</strong> <span id="combinedScoreDisplay" class="font-medium">N/A</span></p>
+                <p class="text-gray-700"><strong>Task Type (Backend Identified):</strong> <span id="taskTypeDisplay" class="font-medium">N/A</span></p>
+                <p class="text-gray-700"><strong>Task Complexity (Backend Identified):</strong> <span id="taskComplexityDisplay" class="font-medium">N/A</span></p>
+                <div class="card p-4 border border-gray-200 mt-4">
+                    <h4 class="text-md font-semibold text-gray-800 mb-2">Dynamically Built Reasoning Framework:</h4>
+                    <p class="text-gray-700"><strong>Persona:</strong> <span id="frameworkPersona" class="font-normal">N/A</span></p>
+                    <p class="text-gray-700"><strong>Guidelines:</strong> <span id="frameworkGuidelines" class="font-normal whitespace-pre-wrap">N/A</span></p>
+                    <p class="text-gray-700"><strong>Keywords:</strong> <span id="frameworkKeywords" class="font-normal">N/A</span></p>
+                    <p class="text-gray-700"><strong>Weights:</strong> <span id="frameworkWeights" class="font-normal">N/A</span></p>
+                    <p class="text-gray-700"><strong>Mathematical Logic:</strong> <span id="frameworkMathLogic" class="font-normal">N/A</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- API Endpoint ---
+        const API_ENDPOINT = "http://127.0.0.1:5000/process_task"; 
+
+        // --- UI Elements and Event Listener ---
+        const domainInput = document.getElementById('domainInput');
+        const subDomainInput = document.getElementById('subDomainInput');
+        const taskInput = document.getElementById('taskInput');
+        const modeSelector = document.getElementById('modeSelector');
+        const submitTaskBtn = document.getElementById('submitTask');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        const modeDisplay = document.getElementById('modeDisplay');
+        const domainDisplay = document.getElementById('domainDisplay');
+        const subDomainDisplay = document.getElementById('subDomainDisplay');
+        const responseDisplay = document.getElementById('responseDisplay');
+        const latencyDisplay = document.getElementById('latencyDisplay');
+        const tokensDisplay = document.getElementById('tokensDisplay');
+        const accuracyDisplay = document.getElementById('accuracyDisplay');
+        const semanticSimilarityDisplay = document.getElementById('semanticSimilarityDisplay');
+        const reasoningProcessQualityDisplay = document.getElementById('reasoningProcessQualityDisplay');
+        const combinedScoreDisplay = document.getElementById('combinedScoreDisplay');
+        const taskTypeDisplay = document.getElementById('taskTypeDisplay');
+        const taskComplexityDisplay = document.getElementById('taskComplexityDisplay');
+
+        // Framework display elements
+        const frameworkPersona = document.getElementById('frameworkPersona');
+        const frameworkGuidelines = document.getElementById('frameworkGuidelines');
+        const frameworkKeywords = document.getElementById('frameworkKeywords');
+        const frameworkWeights = document.getElementById('frameworkWeights');
+        const frameworkMathLogic = document.getElementById('frameworkMathLogic');
+
+
+        // Set initial selected mode display
+        modeDisplay.textContent = modeSelector.options[modeSelector.selectedIndex].text.split(' ')[0];
+
+        modeSelector.addEventListener('change', () => {
+            modeDisplay.textContent = modeSelector.options[modeSelector.selectedIndex].text.split(' ')[0];
+        });
+
+        submitTaskBtn.addEventListener('click', async () => {
+            const userPrompt = taskInput.value.trim();
+            const domain = domainInput.value.trim();
+            const subDomain = subDomainInput.value.trim();
+
+            if (!userPrompt) {
+                alert('Please enter a task!');
+                return;
+            }
+            if (!domain && selectedMode === 'reasoning') {
+                alert('Please enter a Domain for Reasoning mode!');
+                return;
+            }
+
+            const selectedMode = modeSelector.value;
+
+            // Show loading spinner and disable button
+            loadingSpinner.classList.remove('hidden');
+            submitTaskBtn.disabled = true;
+            submitTaskBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Reset displays
+            responseDisplay.textContent = "Processing...";
+            latencyDisplay.textContent = "Calculating...";
+            tokensDisplay.textContent = "Calculating...";
+            accuracyDisplay.textContent = "Calculating...";
+            semanticSimilarityDisplay.textContent = "Calculating...";
+            reasoningProcessQualityDisplay.textContent = "Calculating...";
+            combinedScoreDisplay.textContent = "Calculating...";
+            taskTypeDisplay.textContent = "Determining...";
+            taskComplexityDisplay.textContent = "Determining...";
+            modeDisplay.textContent = selectedMode.charAt(0).toUpperCase() + selectedMode.slice(1);
+            domainDisplay.textContent = domain || 'N/A';
+            subDomainDisplay.textContent = subDomain || 'N/A';
+
+            frameworkPersona.textContent = "Building...";
+            frameworkGuidelines.textContent = "Building...";
+            frameworkKeywords.textContent = "Building...";
+            frameworkWeights.textContent = "Building...";
+            frameworkMathLogic.textContent = "Building...";
+
+            try {
+                const payload = {
+                    prompt: userPrompt,
+                    selectedMode: selectedMode,
+                    domain: domain,
+                    subDomain: subDomain
+                };
+
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                // Update UI with results from backend
+                responseDisplay.textContent = result.llmResponse;
+                latencyDisplay.textContent = `${result.latencySeconds.toFixed(2)}s`;
+                tokensDisplay.textContent = `${result.totalTokens} (Prompt: ${result.promptTokens}, Completion: ${result.completionTokens})`;
+                accuracyDisplay.textContent = result.accuracy.toFixed(2);
+                semanticSimilarityDisplay.textContent = result.semanticSimilarity.toFixed(2);
+                reasoningProcessQualityDisplay.textContent = result.reasoningProcessQuality.toFixed(2);
+                combinedScoreDisplay.textContent = result.combinedScore.toFixed(2);
+                taskTypeDisplay.textContent = result.taskType;
+                taskComplexityDisplay.textContent = result.taskComplexity.toFixed(2);
+                
+                // Display dynamically built reasoning framework
+                if (result.reasoningFramework) {
+                    frameworkPersona.textContent = result.reasoningFramework.persona || 'N/A';
+                    frameworkGuidelines.textContent = result.reasoningFramework.reasoning_guidelines || 'N/A';
+                    frameworkKeywords.textContent = result.reasoningFramework.reasoning_keywords ? result.reasoningFramework.reasoning_keywords.join(', ') : 'N/A';
+                    frameworkWeights.textContent = result.reasoningFramework.weights_override ? JSON.stringify(result.reasoningFramework.weights_override) : 'N/A';
+                    frameworkMathLogic.textContent = result.reasoningFramework.mathematical_logic_framework || 'N/A';
+                } else {
+                    frameworkPersona.textContent = 'N/A';
+                    frameworkGuidelines.textContent = 'N/A';
+                    frameworkKeywords.textContent = 'N/A';
+                    frameworkWeights.textContent = 'N/A';
+                    frameworkMathLogic.textContent = 'N/A';
+                }
+
+            } catch (error) {
+                console.error("Error communicating with API:", error);
+                responseDisplay.textContent = `Error: Could not connect to backend API or API returned an error. Check console for details. ${error.message}`;
+                modeDisplay.textContent = "Error";
+                latencyDisplay.textContent = "N/A";
+                tokensDisplay.textContent = "N/A";
+                accuracyDisplay.textContent = "N/A";
+                semanticSimilarityDisplay.textContent = "N/A";
+                reasoningProcessQualityDisplay.textContent = "N/A";
+                combinedScoreDisplay.textContent = "N/A";
+                taskTypeDisplay.textContent = "N/A";
+                taskComplexityDisplay.textContent = "N/A";
+                domainDisplay.textContent = "Error";
+                subDomainDisplay.textContent = "Error";
+
+                frameworkPersona.textContent = 'Error';
+                frameworkGuidelines.textContent = 'Error';
+                frameworkKeywords.textContent = 'Error';
+                frameworkWeights.textContent = 'Error';
+                frameworkMathLogic.textContent = 'Error';
+
+            } finally {
+                // Hide loading spinner and re-enable button
+                loadingSpinner.classList.add('hidden');
+                submitTaskBtn.disabled = false;
+                submitTaskBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        });
+    </script>
+</body>
+</html>
