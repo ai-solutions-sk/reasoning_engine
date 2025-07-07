@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Reasoning Engine - Ultimate Intelligence System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .expert-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .expert-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .reasoning-path {
+            background: linear-gradient(to right, #e0f2f1, #e8f5e9);
+            border-left: 4px solid #4caf50;
+        }
+        .hidden-pattern {
+            background: linear-gradient(to right, #fff3e0, #ffe0b2);
+            border-left: 4px solid #ff9800;
+        }
+        .solution-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .metric-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .confidence-high { background: #d4edda; color: #155724; }
+        .confidence-medium { background: #fff3cd; color: #856404; }
+        .confidence-low { background: #f8d7da; color: #721c24; }
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        .tab-button {
+            padding: 0.5rem 1rem;
+            border-radius: 8px 8px 0 0;
+            background: #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: white;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="container mx-auto max-w-7xl">
+        <div class="glass-morphism p-8 mb-6">
+            <h1 class="text-4xl font-bold text-center text-gray-800 mb-2">
+                🧠 Unified Reasoning Engine
+            </h1>
+            <p class="text-center text-gray-600 text-lg mb-6">
+                Ultimate Intelligence System: Expert in Every Domain of Human Knowledge
+            </p>
+            
+            <!-- Input Section -->
+            <div class="mb-8">
+                <label for="problemInput" class="block text-gray-700 text-lg font-semibold mb-3">
+                    Enter Your Problem or Question:
+                </label>
+                <textarea 
+                    id="problemInput" 
+                    class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition-colors h-32 text-lg"
+                    placeholder="Enter any problem: mathematical, logical, optimization, legal, scientific, philosophical... The engine will automatically detect the domain and apply relevant expert reasoning."
+                ></textarea>
+                
+                <div class="flex justify-center mt-6">
+                    <button 
+                        id="analyzeBtn"
+                        class="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all transform hover:scale-105 flex items-center gap-3"
+                    >
+                        <span>Analyze with Unified Intelligence</span>
+                        <div id="loadingSpinner" class="loading-spinner hidden"></div>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Domain Detection -->
+            <div id="domainSection" class="hidden">
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                    <p class="font-semibold text-blue-800">
+                        Detected Domain: <span id="detectedDomain" class="text-xl"></span>
+                        <span class="metric-badge confidence-high ml-2" id="domainConfidence"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div id="resultsSection" class="hidden">
+            <!-- Expert Analyses -->
+            <div class="glass-morphism p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">👥 Expert Analyses</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="expertGrid">
+                    <!-- Expert cards will be dynamically inserted here -->
+                </div>
+            </div>
+            
+            <!-- Reasoning Paths -->
+            <div class="glass-morphism p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">🛤️ Reasoning Paths</h2>
+                <div id="reasoningPaths" class="space-y-4">
+                    <!-- Reasoning paths will be dynamically inserted here -->
+                </div>
+            </div>
+            
+            <!-- Solution Synthesis -->
+            <div class="glass-morphism p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">💡 Unified Solution</h2>
+                <div id="solutionContent" class="prose max-w-none">
+                    <!-- Solution will be dynamically inserted here -->
+                </div>
+            </div>
+            
+            <!-- Hidden Patterns -->
+            <div class="glass-morphism p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">🔍 Hidden Patterns Discovered</h2>
+                <div id="hiddenPatterns" class="space-y-2">
+                    <!-- Hidden patterns will be dynamically inserted here -->
+                </div>
+            </div>
+            
+            <!-- Problem Metrics -->
+            <div class="glass-morphism p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">📊 Problem Metrics</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
+                        <h3 class="font-semibold text-blue-800">Entropy</h3>
+                        <p class="text-2xl font-bold text-blue-900" id="entropyMetric">-</p>
+                        <p class="text-sm text-blue-600">Information content</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg">
+                        <h3 class="font-semibold text-green-800">Complexity</h3>
+                        <p class="text-2xl font-bold text-green-900" id="complexityMetric">-</p>
+                        <p class="text-sm text-green-600">Kolmogorov complexity</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg">
+                        <h3 class="font-semibold text-purple-800">Token Count</h3>
+                        <p class="text-2xl font-bold text-purple-900" id="tokenCountMetric">-</p>
+                        <p class="text-sm text-purple-600">Problem size</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Performance Stats -->
+            <div class="glass-morphism p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">⚡ Performance</h2>
+                <div class="flex gap-6 flex-wrap">
+                    <div>
+                        <span class="text-gray-600">Latency:</span>
+                        <span class="font-semibold text-lg ml-2" id="latencyDisplay">-</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Experts Consulted:</span>
+                        <span class="font-semibold text-lg ml-2" id="expertCountDisplay">-</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Reasoning Paths:</span>
+                        <span class="font-semibold text-lg ml-2" id="pathCountDisplay">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_ENDPOINT = 'http://127.0.0.1:5001/unified_reason';
+        
+        const problemInput = document.getElementById('problemInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const resultsSection = document.getElementById('resultsSection');
+        const domainSection = document.getElementById('domainSection');
+        
+        // Example problems for quick testing
+        const exampleProblems = [
+            "What is 15 * 7?",
+            "If all dogs are mammals, and Fido is a dog, is Fido a mammal?",
+            "You are a factory manager producing two products, X and Y. Each unit of X requires 2 hours on Machine A and 1 hour on Machine B. Each unit of Y requires 1 hour on Machine A and 3 hours on Machine B. You have a maximum of 10 hours available on Machine A and 15 hours on Machine B. Each unit of X sells for $3 profit, and each unit of Y sells for $2 profit. How many units of X and Y should you produce to maximize total profit?",
+            "Three perfect logicians — Alice, Bob, and Carla — are each given a hat that is either red or blue. They can see the other two hats, but not their own. The game master tells them: 'At least one of your hats is red.' They take turns saying either 'I know my hat's color' or 'I don't know.' Alice: 'I don't know.' Bob: 'I don't know.' Carla: 'I know my hat is red.' What are the colors of each person's hat, and how did Carla reason it out?",
+            "Analyze the derivative of f(x) = x³ - 3x² + 2x and find all critical points.",
+            "A particle moves along a straight line with velocity v(t) = 3t² - 12t + 9. Find when the particle changes direction."
+        ];
+        
+        // Set a random example on load
+        window.addEventListener('load', () => {
+            const randomExample = exampleProblems[Math.floor(Math.random() * exampleProblems.length)];
+            problemInput.value = randomExample;
+        });
+        
+        analyzeBtn.addEventListener('click', async () => {
+            const problem = problemInput.value.trim();
+            
+            if (!problem) {
+                alert('Please enter a problem to analyze!');
+                return;
+            }
+            
+            // Show loading state
+            loadingSpinner.classList.remove('hidden');
+            analyzeBtn.disabled = true;
+            resultsSection.classList.add('hidden');
+            domainSection.classList.add('hidden');
+            
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt: problem })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                displayResults(result);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error analyzing problem: ${error.message}`);
+            } finally {
+                loadingSpinner.classList.add('hidden');
+                analyzeBtn.disabled = false;
+            }
+        });
+        
+        function displayResults(result) {
+            // Show domain detection
+            domainSection.classList.remove('hidden');
+            document.getElementById('detectedDomain').textContent = 
+                result.detected_domain.charAt(0).toUpperCase() + result.detected_domain.slice(1);
+            document.getElementById('domainConfidence').textContent = 
+                `${(result.domain_confidence * 100).toFixed(0)}% confidence`;
+            
+            // Display expert analyses
+            const expertGrid = document.getElementById('expertGrid');
+            expertGrid.innerHTML = '';
+            
+            result.expert_analyses.forEach(expert => {
+                const expertCard = createExpertCard(expert);
+                expertGrid.appendChild(expertCard);
+            });
+            
+            // Display reasoning paths
+            const reasoningPathsDiv = document.getElementById('reasoningPaths');
+            reasoningPathsDiv.innerHTML = '';
+            
+            result.reasoning_paths.forEach(path => {
+                const pathElement = createReasoningPath(path);
+                reasoningPathsDiv.appendChild(pathElement);
+            });
+            
+            // Display solution
+            const solutionContent = document.getElementById('solutionContent');
+            solutionContent.innerHTML = formatSolution(result.solution);
+            
+            // Display hidden patterns
+            const hiddenPatternsDiv = document.getElementById('hiddenPatterns');
+            hiddenPatternsDiv.innerHTML = '';
+            
+            const allPatterns = new Set();
+            result.expert_analyses.forEach(expert => {
+                expert.patterns.forEach(pattern => allPatterns.add(pattern));
+            });
+            
+            allPatterns.forEach(pattern => {
+                const patternDiv = document.createElement('div');
+                patternDiv.className = 'hidden-pattern p-3 rounded-lg';
+                patternDiv.innerHTML = `<span class="text-orange-800">🔸 ${escapeHtml(pattern)}</span>`;
+                hiddenPatternsDiv.appendChild(patternDiv);
+            });
+            
+            if (allPatterns.size === 0) {
+                hiddenPatternsDiv.innerHTML = '<p class="text-gray-500">No hidden patterns detected in this problem.</p>';
+            }
+            
+            // Display metrics
+            document.getElementById('entropyMetric').textContent = 
+                result.problem_metrics.entropy.toFixed(2);
+            document.getElementById('complexityMetric').textContent = 
+                result.problem_metrics.complexity.toFixed(2);
+            document.getElementById('tokenCountMetric').textContent = 
+                result.problem_metrics.token_count;
+            
+            // Display performance
+            document.getElementById('latencyDisplay').textContent = 
+                `${result.performance.latency_seconds.toFixed(2)}s`;
+            document.getElementById('expertCountDisplay').textContent = 
+                result.performance.expert_count;
+            document.getElementById('pathCountDisplay').textContent = 
+                result.performance.path_count;
+            
+            // Show results section
+            resultsSection.classList.remove('hidden');
+        }
+        
+        function createExpertCard(expert) {
+            const card = document.createElement('div');
+            card.className = 'expert-card p-4';
+            
+            const confidenceClass = expert.confidence >= 0.7 ? 'confidence-high' : 
+                                   expert.confidence >= 0.4 ? 'confidence-medium' : 
+                                   'confidence-low';
+            
+            card.innerHTML = `
+                <h3 class="font-semibold text-lg mb-2">${escapeHtml(expert.expert)}</h3>
+                <span class="metric-badge ${confidenceClass} mb-3 inline-block">
+                    ${(expert.confidence * 100).toFixed(0)}% confidence
+                </span>
+                <div class="text-sm text-gray-700">
+                    <p class="font-medium mb-1">Key Insights:</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        ${expert.insights.map(insight => 
+                            `<li class="text-xs">${escapeHtml(insight)}</li>`
+                        ).join('')}
+                    </ul>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function createReasoningPath(path) {
+            const pathDiv = document.createElement('div');
+            pathDiv.className = 'reasoning-path p-4 rounded-lg';
+            
+            pathDiv.innerHTML = `
+                <div class="mb-3">
+                    <h3 class="font-semibold text-lg mb-1">
+                        ${path.reasoning_types.map(type => 
+                            `<span class="inline-block bg-green-200 text-green-800 px-2 py-1 rounded text-sm mr-2">
+                                ${type.replace(/_/g, ' ').toUpperCase()}
+                            </span>`
+                        ).join('')}
+                    </h3>
+                    <span class="text-sm text-gray-600">
+                        Confidence: ${(path.confidence * 100).toFixed(0)}% | 
+                        Complexity: ${path.complexity} | 
+                        Depth: ${path.depth}
+                    </span>
+                </div>
+                
+                <div class="space-y-2 text-sm">
+                    <div>
+                        <span class="font-semibold text-blue-700">WHAT:</span>
+                        <span class="text-gray-700">${escapeHtml(path.what)}</span>
+                    </div>
+                    <div>
+                        <span class="font-semibold text-green-700">HOW:</span>
+                        <span class="text-gray-700">${escapeHtml(path.how)}</span>
+                    </div>
+                    <div>
+                        <span class="font-semibold text-purple-700">WHY:</span>
+                        <span class="text-gray-700">${escapeHtml(path.why)}</span>
+                    </div>
+                </div>
+            `;
+            
+            return pathDiv;
+        }
+        
+        function formatSolution(solution) {
+            // Convert markdown-like formatting to HTML
+            return solution
+                .replace(/## (.*?)$/gm, '<h2 class="text-xl font-bold mt-4 mb-2 text-gray-800">$1</h2>')
+                .replace(/### (.*?)$/gm, '<h3 class="text-lg font-semibold mt-3 mb-1 text-gray-700">$1</h3>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/```(.*?)```/gs, '<pre class="my-2">$1</pre>')
+                .replace(/`(.*?)`/g, '<code class="bg-gray-200 px-1 py-0.5 rounded">$1</code>')
+                .replace(/\n\n/g, '</p><p class="mb-3">')
+                .replace(/^/, '<p class="mb-3">')
+                .replace(/$/, '</p>');
+        }
+        
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
