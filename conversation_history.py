@@ -7,27 +7,16 @@ class ConversationHistoryManager:
     """Manages conversation history for distinct sessions, storing each in a separate file."""
 
     def __init__(self, session_id: str, history_dir: str = "conversation_history", max_entries: int = 20):
-        """
-        Initializes a history manager for a specific session.
-        Args:
-            session_id: The unique identifier for the conversation session.
-            history_dir: The directory where history files will be stored.
-            max_entries: The maximum number of turns to keep in the history.
-        """
         if not session_id or not isinstance(session_id, str):
             raise ValueError("A valid session_id string must be provided.")
             
         self.history_dir = Path(history_dir)
         self.history_dir.mkdir(exist_ok=True)
-        # Create a session-specific history file
         self.history_path = self.history_dir / f"history_{session_id}.json"
         self.max_entries = max_entries
         self._history: List[Dict[str, Any]] = []
         self._load()
 
-    # ---------------------------------------------------------------------
-    # Public helpers
-    # ---------------------------------------------------------------------
     def save_entry(self, prompt: str, what_problem: str, answer: str) -> None:
         """Append a new conversation turn and persist to disk for the current session."""
         self._history.append({
@@ -36,7 +25,6 @@ class ConversationHistoryManager:
             "answer": answer,
             "timestamp": datetime.utcnow().isoformat() + "Z"
         })
-        # Truncate to the last *max_entries* items
         self._history = self._history[-self.max_entries:]
         self._persist()
 
@@ -49,16 +37,12 @@ class ConversationHistoryManager:
         items = self.get_recent_history(max_entries)
         if not items:
             return ""
-        lines = []
+        lines = ["PREVIOUS CONVERSATION TURNS:"]
         for idx, item in enumerate(items, 1):
-            lines.append(f"{idx}. PROMPT: {item['prompt']}")
-            lines.append(f"   WHAT: {item['what_problem']}")
-            lines.append(f"   ANSWER: {item['answer'][:200]}...")
+            lines.append(f"{idx}. USER PROMPT: {item['prompt']}")
+            lines.append(f"   YOUR ANSWER: {item['answer'][:200]}...")
         return "\n".join(lines)
 
-    # ------------------------------------------------------------------
-    # Internal helpers
-    # ------------------------------------------------------------------
     def _load(self):
         """Loads history from the session-specific file."""
         if self.history_path.exists():

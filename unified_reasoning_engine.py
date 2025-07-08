@@ -816,7 +816,7 @@ class UnifiedReasoningEngine:
                     mathematical_basis="Validation: check if solution satisfies constraints",
                     logical_justification="Consistency with given information",
                     confidence=0.3,
-                    dependencies=["step_2"],
+                    dependencies=[f"step_{step_counter-1}"],
                     outputs=["solution_validation"]
                 )
             ]
@@ -1196,43 +1196,62 @@ Provide a comprehensive solution that systematically addresses all 7 dimensions:
             }]
         return []
 
-    def reason(self, problem: str, session_id: str, file_content: str = None, filename: str = None) -> Dict[str, Any]:
-        """Simplified reasoning pipeline (conversation-history and file-context aware)."""
+    def reason(self, problem: str, session_id: str, uploaded_file_content: str = None, filename: str = None) -> Dict[str, Any]:
+        """
+        Reasoning pipeline that uses file content for a single turn and conversation
+        history for session continuity.
+        """
         history_manager = ConversationHistoryManager(session_id=session_id)
         
-        # Prepend file context to the problem, handling errors gracefully
-        if file_content:
-            if file_content.strip().startswith(("[Error:", "[Warning:")):
-                # If extraction failed, inform the LLM so it can tell the user.
-                problem = f"A user uploaded a file named '{filename}', but there was an issue: {file_content}\\n\\nPlease first inform the user about this file processing issue, and then try to answer their question based on the prompt alone.\\n\\nUser's question: {problem}"
+        prompt_parts = []
+        
+        # 1. Add file context if it exists for THIS turn.
+        if uploaded_file_content:
+            if uploaded_file_content.strip().startswith(("[Error:", "[Warning:")):
+                # If extraction failed, add a specific instruction for the LLM.
+                file_context_prompt = f"A user uploaded a file named '{filename}', but there was an issue: {uploaded_file_content}\\n\\nPlease first inform the user about this file processing issue, then try to answer their question based on the prompt and conversation history alone."
+                prompt_parts.append(file_context_prompt)
             else:
-                # If extraction succeeded, prepend the context.
-                problem = f"Use the following context from the uploaded file '{filename}' to answer the user's question.\\n\\n--- FILE CONTEXT ---\\n{file_content}\\n--- END FILE CONTEXT ---\\n\\nUser's question: {problem}"
+                # If extraction succeeded, add the file content as context.
+                file_context_prompt = f"Use the following context from the user's uploaded file to answer their question.\\n\\n--- FILE CONTEXT ---\\n{uploaded_file_content}\\n--- END FILE CONTEXT ---"
+                prompt_parts.append(file_context_prompt)
+        
+        # 2. Add the context from previous conversation turns.
+        history_context = history_manager.get_context_string()
+        if history_context:
+            prompt_parts.append(history_context)
+            
+        # 3. Add the user's current question.
+        prompt_parts.append(f"User's question: {problem}")
+        
+        # Combine all parts into the final prompt for the LLM.
+        final_prompt = "\n\n".join(prompt_parts)
+        
+        # Add a debug log to see the exact prompt being sent to the LLM.
+        print(f"--- FINAL PROMPT ---\n{final_prompt}\n--- END FINAL PROMPT ---")
+            
+        # The 'problem' variable passed to internal methods is the full, context-rich prompt.
+        domain, domain_conf = self.domain_detector.detect_domain(final_prompt)
+        structure = self.analyze_problem_structure(final_prompt)
 
-        domain, domain_conf = self.domain_detector.detect_domain(problem)
-        structure = self.analyze_problem_structure(problem)
-
-        expert_analyses = [exp.analyze(problem, {'domain': domain, 'structure': structure})
+        expert_analyses = [exp.analyze(final_prompt, {'domain': domain, 'structure': structure})
                            for exp in self.experts.values()]
 
-        paths = self.generate_reasoning_paths(problem, domain, expert_analyses)
+        paths = self.generate_reasoning_paths(final_prompt, domain, expert_analyses)
+        
+        solution = self.synthesize_solution(final_prompt, paths, structure, "", history_manager)
+        final_user_answer = self._synthesize_final_user_answer(final_prompt, solution['synthesis'])
 
-        history_context = history_manager.get_context_string()
-        solution = self.synthesize_solution(problem, paths, structure, history_context, history_manager)
-
-        # NEW: Synthesize the final user-facing answer from the detailed solution
-        final_user_answer = self._synthesize_final_user_answer(problem, solution['synthesis'])
-
-        # Persist the current turn to conversation history
+        # Save only the original user prompt (not the full context) to the chat history.
         what_problem_text = paths[0].what_explanation if paths else problem
         history_manager.save_entry(problem, what_problem_text, final_user_answer)
 
         return {
-            'problem': problem,
+            'problem': problem, # Return the original problem for clarity
+            'solution': solution['synthesis'],
+            'final_user_answer': final_user_answer,
             'detected_domain': domain,
             'domain_confidence': domain_conf,
-            'solution': solution['synthesis'],  # This is the internal "thinking process"
-            'final_user_answer': final_user_answer,  # This is for the end user
             'reasoning_paths': solution['reasoning_paths'],
             'problem_metrics': {
                 'entropy': structure['entropy'],
@@ -1314,7 +1333,7 @@ def unified_reason():
         result = unified_engine.reason(
             problem=prompt, 
             session_id=session_id,
-            file_content=file_content,
+            uploaded_file_content=file_content,
             filename=filename
         )
         return jsonify(result)
