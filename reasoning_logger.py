@@ -165,9 +165,9 @@ class UnifiedReasoningLogger:
         if not self.current_session:
             raise ValueError("No active session. Call start_session first.")
             
-        # Ensure step-by-step process is included
-        if "step_by_step_process" not in path_data:
-            path_data["step_by_step_process"] = []
+        # Ensure granular reasoning steps are included
+        if "granular_reasoning_steps" not in path_data:
+            path_data["granular_reasoning_steps"] = []
             
         self.current_session["reasoning_process"]["reasoning_paths"].append(path_data)
         
@@ -370,8 +370,8 @@ class UnifiedReasoningLogger:
         lineage_entry = {
             "output_component": path_data.get("path_id", "unknown"),
             "source_inputs": [self.current_session["input_analysis"]["raw_prompt"]],
-            "transformation_path": [step.get("operation", "") for step in path_data.get("step_by_step_process", [])],
-            "confidence_propagation": [step.get("confidence", 0) for step in path_data.get("step_by_step_process", [])]
+            "transformation_path": [step.get("description", "") for step in path_data.get("granular_reasoning_steps", [])],
+            "confidence_propagation": [step.get("confidence", 0) for step in path_data.get("granular_reasoning_steps", [])]
         }
         
         self.current_session["traceability"]["lineage"].append(lineage_entry)
@@ -382,8 +382,17 @@ class UnifiedReasoningLogger:
         for analysis in self.current_session["reasoning_process"]["expert_analyses"]:
             expert_types.add(analysis["expert_type"])
         
-        all_experts = ["linear_algebra", "calculus", "statistics", "linear_programming", 
-                      "logic", "causal", "pattern", "ai_scientist"]
+        all_experts = [
+            "mathematical_foundation",
+            "negative_reasoning",
+            "boundary_reasoning",
+            "transitional_reasoning",
+            "positive_reasoning",
+            "emergent_reasoning",
+            "logical_structure",
+            "causal",
+            "pattern"
+        ]
         
         return {expert: expert in expert_types for expert in all_experts}
     
@@ -391,7 +400,7 @@ class UnifiedReasoningLogger:
         """Calculate the depth of reasoning"""
         max_depth = 0
         for path in self.current_session["reasoning_process"]["reasoning_paths"]:
-            depth = len(path.get("step_by_step_process", []))
+            depth = len(path.get("granular_reasoning_steps", []))
             max_depth = max(max_depth, depth)
         return max_depth
     
@@ -405,7 +414,7 @@ class UnifiedReasoningLogger:
         
         # Add complexity from expert analyses
         for analysis in self.current_session["reasoning_process"]["expert_analyses"]:
-            if analysis["expert_type"] in ["linear_algebra", "calculus", "statistics"]:
+            if analysis["expert_type"] in ["mathematical_foundation", "boundary_reasoning", "transitional_reasoning"]:
                 complexity_score += analysis["confidence_score"] * 0.3
         
         return min(complexity_score, 10.0)  # Cap at 10

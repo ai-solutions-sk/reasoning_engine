@@ -25,6 +25,12 @@ import scipy.stats as stats
 from scipy.optimize import minimize, linprog
 import pulp
 from reasoning_logger import ReasoningSessionManager
+from conversation_history import ConversationHistoryManager  # NEW IMPORT
+import docx
+from pypdf import PdfReader
+import io
+from werkzeug.utils import secure_filename
+from datetime import datetime
 
 # Configuration
 API_KEY = "AIzaSyBLXXuiqpx9BfDxGi28Ci8szlsb3qAm9Dw"
@@ -565,6 +571,58 @@ class DomainDetector:
         
         return best_domain, confidence
 
+# ---------- File Content Extraction (Enhanced) ----------
+def _extract_file_content(file) -> str:
+    """
+    Extracts text from an uploaded file, with enhanced error/warning handling.
+    Returns the file content or a specific [Error/Warning] message.
+    """
+    filename = file.filename
+    content = ""
+    try:
+        print(f"INFO: Attempting to extract text from '{filename}'")
+        if filename.endswith('.pdf'):
+            reader = PdfReader(io.BytesIO(file.read()))
+            if reader.is_encrypted:
+                print(f"WARNING: PDF '{filename}' is encrypted. Trying to decrypt.")
+                try:
+                    if reader.decrypt('') == 0: # 0 means decryption failed
+                        raise Exception("failed to decrypt")
+                except Exception as decrypt_error:
+                    print(f"ERROR: Failed to decrypt PDF '{filename}': {decrypt_error}")
+                    return f"[Error: The PDF file '{filename}' is encrypted and could not be read.]"
+            
+            for i, page in enumerate(reader.pages):
+                page_text = page.extract_text()
+                if page_text:
+                    content += page_text + "\\n"
+                else:
+                    print(f"INFO: No text found on page {i+1} of '{filename}'. The page might be an image.")
+        
+        elif filename.endswith('.docx'):
+            doc = docx.Document(io.BytesIO(file.read()))
+            for para in doc.paragraphs:
+                content += para.text + "\\n"
+        
+        elif filename.endswith('.txt'):
+            content = file.read().decode('utf-8')
+        
+        else:
+            print(f"WARNING: Unsupported file type '{filename}'")
+            return f"[Error: Unsupported file type '{filename}'. Please use PDF, DOCX, or TXT.]"
+            
+    except Exception as e:
+        print(f"ERROR: Could not process file '{filename}'. Reason: {e}")
+        return f"[Error reading file: An unexpected error occurred while processing '{filename}'.]"
+    
+    if not content.strip():
+        print(f"WARNING: No text content could be extracted from '{filename}'. It may be empty or contain only images.")
+        return f"[Warning: The file '{filename}' was uploaded, but no text could be extracted. It might be an image-based file or empty.]"
+    else:
+        print(f"INFO: Successfully extracted {len(content)} characters from '{filename}'.")
+
+    return content
+
 class UnifiedReasoningEngine:
     """The ultimate unified reasoning engine"""
     
@@ -838,20 +896,37 @@ class UnifiedReasoningEngine:
         ))
         step_counter += 1
         
-        # Step 4: WHEN - Applicability conditions
+        # Step 4: VALIDATE - Premise and contradiction check
+        contradictions = self._identify_contradictions(experts)
+        contradiction_summary = (
+            f"{len(contradictions)} contradiction(s) detected" if contradictions else "No major contradictions detected"
+        )
+        steps.append(GranularReasoningStep(
+            step_id=f"step_{step_counter}",
+            step_type="validate",
+            description="Validate foundational premises and cross-check for contradictions",
+            mathematical_basis="Consistency checks across expert premises and domain facts",
+            logical_justification=contradiction_summary,
+            confidence=np.mean([e.confidence for e in experts]),
+            dependencies=[f"step_{step_counter-1}"],
+            outputs=["premise_validation", "contradiction_report"]
+        ))
+        step_counter += 1
+        
+        # Step 5: WHEN - Applicability conditions (dependent on validation)
         steps.append(GranularReasoningStep(
             step_id=f"step_{step_counter}",
             step_type="when",
             description="Determine when this reasoning applies",
             mathematical_basis="Domain of validity and applicability conditions",
-            logical_justification="Expert domain knowledge and constraints",
+            logical_justification="Expert domain knowledge, validated premises",
             confidence=np.mean([e.confidence for e in experts]),
-            dependencies=[f"step_{step_counter-2}"],
+            dependencies=[f"step_{step_counter-1}"],
             outputs=["applicability_conditions", "domain_constraints"]
         ))
         step_counter += 1
         
-        # Step 5: WHERE - Spatial/contextual validity
+        # Step 6: WHERE - Spatial/contextual validity
         steps.append(GranularReasoningStep(
             step_id=f"step_{step_counter}",
             step_type="where",
@@ -864,7 +939,7 @@ class UnifiedReasoningEngine:
         ))
         step_counter += 1
         
-        # Step 6: WHO - Entity identification
+        # Step 7: WHO - Entity identification
         steps.append(GranularReasoningStep(
             step_id=f"step_{step_counter}",
             step_type="who",
@@ -877,13 +952,13 @@ class UnifiedReasoningEngine:
         ))
         step_counter += 1
         
-        # Step 7: WHICH - Alternative selection
+        # Step 8: WHICH - Alternative selection and iterative refinement
         steps.append(GranularReasoningStep(
             step_id=f"step_{step_counter}",
             step_type="which",
-            description="Select among alternative approaches",
-            mathematical_basis="Decision theory and optimization",
-            logical_justification="Comparative analysis of alternatives",
+            description="Select among alternative approaches and refine based on validation feedback",
+            mathematical_basis="Decision theory, optimization, and contradiction resolution",
+            logical_justification="Comparative analysis of validated alternatives",
             confidence=np.mean([e.confidence for e in experts]),
             dependencies=[f"step_{step_counter-3}"],
             outputs=["alternative_selection", "optimal_choice"]
@@ -907,7 +982,10 @@ class UnifiedReasoningEngine:
         approaches = [e.recommended_approach for e in experts if e.recommended_approach]
         step_count = len(steps)
         
-        return f"HOW: Applying {len(experts)} expert methodologies through {step_count} granular steps. Primary approaches: {', '.join(approaches[:2])}"
+        return (
+            f"HOW: Applying {len(experts)} expert methodologies through {step_count} granular steps, "
+            f"including premise validation and iterative refinement. Primary approaches: {', '.join(approaches[:2])}"
+        )
     
     def _generate_why_explanation(self, experts: List[ExpertPerspective]) -> str:
         """Generate WHY explanation"""
@@ -956,7 +1034,7 @@ class UnifiedReasoningEngine:
         
         return f"WHICH: Selecting optimal approach {alternatives} based on confidence and domain fit"
     
-    def synthesize_solution(self, problem: str, paths: List[UnifiedReasoningPath], problem_structure: Dict[str, Any]) -> Dict[str, Any]:
+    def synthesize_solution(self, problem: str, paths: List[UnifiedReasoningPath], problem_structure: Dict[str, Any], history_context: str = "", history_manager: ConversationHistoryManager = None) -> Dict[str, Any]:
         """Synthesize final solution using all reasoning paths"""
         # Prepare prompt for final synthesis
         path_summaries = []
@@ -966,11 +1044,26 @@ class UnifiedReasoningEngine:
                 'confidence': path.confidence_score,
                 'key_insights': [insight for expert in path.expert_perspectives for insight in expert.key_insights],
                 'hidden_patterns': [pattern for expert in path.expert_perspectives for pattern in expert.hidden_patterns],
-                'mathematical_foundations': path.mathematical_foundation
+                'mathematical_foundations': path.mathematical_foundation,
+                'reasoning_steps': [
+                    {
+                        'step_id': step.step_id,
+                        'step_type': step.step_type,
+                        'description': step.description,
+                        'mathematical_basis': step.mathematical_basis,
+                        'logical_justification': step.logical_justification,
+                        'confidence': step.confidence,
+                        'dependencies': step.dependencies,
+                        'outputs': step.outputs
+                    }
+                    for step in path.reasoning_steps
+                ]
             }
             path_summaries.append(summary)
             
-        synthesis_prompt = f"""
+        history_section = f"CONVERSATION HISTORY:\n{history_context}\n\n" if history_context else ""
+
+        synthesis_prompt = f"""{history_section}
 You are a unified reasoning system with expertise across all domains of human knowledge. You have access to analyses from 8 different foundational reasoning experts:
 1. Mathematical Foundation Expert - Set theory, algebraic structures, order theory, measure theory
 2. Negative Reasoning Expert - Constraints, impossibilities, what cannot be
@@ -1009,7 +1102,7 @@ Provide a comprehensive solution that systematically addresses all 7 dimensions:
 [Clear statement of what the problem is asking and what needs to be solved]
 
 ## HOW: Solution Process  
-[Step-by-step solution process with mathematical rigor, incorporating insights from all relevant experts]
+[Step-by-step solution process with mathematical rigor, incorporating insights from all relevant experts. **Use the 'reasoning_steps' from the path summaries to structure your response. For each step, describe the action, inner reasoning (mathematical/logical basis), and its output.**]
 
 ## WHY: Justification
 [Mathematical and logical justification for the solution, citing foundational principles]
@@ -1042,6 +1135,10 @@ Provide a comprehensive solution that systematically addresses all 7 dimensions:
                 )
             )
             
+            # Persist the current turn to conversation history **before** preparing the response
+            what_problem_text = paths[0].what_explanation if paths else problem
+            history_manager.save_entry(problem, what_problem_text, response.text)
+            
             return {
                 'synthesis': response.text,
                 'reasoning_paths': [self._path_to_dict(p) for p in paths],
@@ -1049,7 +1146,8 @@ Provide a comprehensive solution that systematically addresses all 7 dimensions:
                     k: v for k, v in problem_structure.items() 
                     if k != 'concept_graph'  # Exclude non-serializable graph
                 },
-                'expert_count': len(set(e.expert_type for p in paths for e in p.expert_perspectives))
+                'expert_count': len(set(e.expert_type for p in paths for e in p.expert_perspectives)),
+                'conversation_history': history_manager.get_recent_history(10)
             }
             
         except Exception as e:
@@ -1057,11 +1155,13 @@ Provide a comprehensive solution that systematically addresses all 7 dimensions:
                 'synthesis': f"Error in synthesis: {e}",
                 'reasoning_paths': [],
                 'problem_structure': {},
-                'expert_count': 0
+                'expert_count': 0,
+                'conversation_history': history_manager.get_recent_history(10)
             }
-            
+
+    # ---------- Helper Methods Added After Refactor ----------
     def _path_to_dict(self, path: UnifiedReasoningPath) -> Dict[str, Any]:
-        """Convert reasoning path to dictionary"""
+        """Lightweight version converting a reasoning path to serializable dict (used by API)."""
         return {
             'path_id': path.path_id,
             'reasoning_types': [t.value for t in path.reasoning_types],
@@ -1071,388 +1171,152 @@ Provide a comprehensive solution that systematically addresses all 7 dimensions:
             'what': path.what_explanation,
             'how': path.how_explanation,
             'why': path.why_explanation,
-            'when': path.when_explanation,
-            'where': path.where_explanation,
-            'who': path.who_explanation,
-            'which': path.which_explanation,
             'reasoning_steps': [
                 {
-                    'step_id': step.step_id,
-                    'step_type': step.step_type,
-                    'description': step.description,
-                    'mathematical_basis': step.mathematical_basis,
-                    'logical_justification': step.logical_justification,
-                    'confidence': step.confidence,
-                    'dependencies': step.dependencies,
-                    'outputs': step.outputs
-                }
-                for step in path.reasoning_steps
-            ],
-            'expert_perspectives': [
+                    'step_id': s.step_id,
+                    'step_type': s.step_type,
+                    'description': s.description,
+                    'mathematical_basis': s.mathematical_basis,
+                    'logical_justification': s.logical_justification,
+                    'confidence': s.confidence,
+                    'dependencies': s.dependencies,
+                    'outputs': s.outputs
+                } for s in path.reasoning_steps
+            ]
+        }
+
+    def _identify_contradictions(self, expert_analyses: List[ExpertPerspective]) -> List[Dict[str, Any]]:
+        """Very simple contradiction detector based on confidence disparity."""
+        high_conf = [e for e in expert_analyses if e.confidence > 0.8]
+        low_conf = [e for e in expert_analyses if e.confidence < 0.3]
+        if high_conf and low_conf:
+            return [{
+                'contradiction_type': 'confidence_disparity',
+                'conflicting_experts': [e.expert_type for e in high_conf + low_conf]
+            }]
+        return []
+
+    def reason(self, problem: str, session_id: str, file_content: str = None, filename: str = None) -> Dict[str, Any]:
+        """Simplified reasoning pipeline (conversation-history and file-context aware)."""
+        history_manager = ConversationHistoryManager(session_id=session_id)
+        
+        # Prepend file context to the problem, handling errors gracefully
+        if file_content:
+            if file_content.strip().startswith(("[Error:", "[Warning:")):
+                # If extraction failed, inform the LLM so it can tell the user.
+                problem = f"A user uploaded a file named '{filename}', but there was an issue: {file_content}\\n\\nPlease first inform the user about this file processing issue, and then try to answer their question based on the prompt alone.\\n\\nUser's question: {problem}"
+            else:
+                # If extraction succeeded, prepend the context.
+                problem = f"Use the following context from the uploaded file '{filename}' to answer the user's question.\\n\\n--- FILE CONTEXT ---\\n{file_content}\\n--- END FILE CONTEXT ---\\n\\nUser's question: {problem}"
+
+        domain, domain_conf = self.domain_detector.detect_domain(problem)
+        structure = self.analyze_problem_structure(problem)
+
+        expert_analyses = [exp.analyze(problem, {'domain': domain, 'structure': structure})
+                           for exp in self.experts.values()]
+
+        paths = self.generate_reasoning_paths(problem, domain, expert_analyses)
+
+        history_context = history_manager.get_context_string()
+        solution = self.synthesize_solution(problem, paths, structure, history_context, history_manager)
+
+        # NEW: Synthesize the final user-facing answer from the detailed solution
+        final_user_answer = self._synthesize_final_user_answer(problem, solution['synthesis'])
+
+        # Persist the current turn to conversation history
+        what_problem_text = paths[0].what_explanation if paths else problem
+        history_manager.save_entry(problem, what_problem_text, final_user_answer)
+
+        return {
+            'problem': problem,
+            'detected_domain': domain,
+            'domain_confidence': domain_conf,
+            'solution': solution['synthesis'],  # This is the internal "thinking process"
+            'final_user_answer': final_user_answer,  # This is for the end user
+            'reasoning_paths': solution['reasoning_paths'],
+            'problem_metrics': {
+                'entropy': structure['entropy'],
+                'complexity': structure['complexity'],
+                'token_count': structure['token_count']
+            },
+            'expert_analyses': [
                 {
                     'expert': e.expert_type,
                     'confidence': e.confidence,
                     'insights': e.key_insights,
-                    'hidden_patterns': e.hidden_patterns,
-                    'reasoning_dimension': e.reasoning_dimension,
-                    'foundational_principles': e.foundational_principles
-                }
-                for e in path.expert_perspectives
-            ]
-        }
-    
-    def _enhanced_path_to_dict(self, path: UnifiedReasoningPath) -> Dict[str, Any]:
-        """Convert reasoning path to enhanced dictionary for logging"""
-        base_dict = self._path_to_dict(path)
-        
-        # Add step-by-step process
-        base_dict['step_by_step_process'] = []
-        
-        # Generate steps from expert perspectives
-        step_num = 1
-        for expert in path.expert_perspectives:
-            for insight in expert.key_insights:
-                base_dict['step_by_step_process'].append({
-                    'step_number': step_num,
-                    'operation': f"Expert {expert.expert_type} analysis",
-                    'mathematical_expression': expert.mathematical_foundation,
-                    'logical_justification': insight,
-                    'intermediate_result': f"Confidence: {expert.confidence:.2f}",
-                    'confidence': expert.confidence,
-                    'reasoning_dimension': expert.reasoning_dimension,
-                    'foundational_principles': expert.foundational_principles
-                })
-                step_num += 1
-        
-        # Add granular reasoning steps
-        base_dict['granular_reasoning_steps'] = [
-            {
-                'step_id': step.step_id,
-                'step_type': step.step_type,
-                'description': step.description,
-                'mathematical_basis': step.mathematical_basis,
-                'logical_justification': step.logical_justification,
-                'confidence': step.confidence,
-                'dependencies': step.dependencies,
-                'outputs': step.outputs
-            }
-            for step in path.reasoning_steps
-        ]
-        
-        # Add enhanced explanations
-        base_dict['enhanced_explanations'] = {
-            'what': path.what_explanation,
-            'how': path.how_explanation,
-            'why': path.why_explanation,
-            'when': path.when_explanation,
-            'where': path.where_explanation,
-            'who': path.who_explanation,
-            'which': path.which_explanation
-        }
-        
-        # Add causal graph if available
-        if path.causal_graph:
-            base_dict['causal_graph'] = {
-                'nodes': list(path.causal_graph.nodes()),
-                'edges': [
-                    {
-                        'from': edge[0],
-                        'to': edge[1],
-                        'relationship': 'causal'
-                    }
-                    for edge in path.causal_graph.edges()
-                ]
-            }
-        
-        return base_dict
-    
-    def _calculate_consistency_metrics(self, expert_analyses: List[ExpertPerspective], 
-                                     paths: List[UnifiedReasoningPath]) -> Dict[str, float]:
-        """Calculate consistency metrics between expert analyses"""
-        if not expert_analyses:
-            return {'expert_agreement_score': 0.0, 'mathematical_consistency': 0.0, 'logical_consistency': 0.0}
-        
-        # Expert agreement based on confidence correlation
-        confidences = [e.confidence for e in expert_analyses]
-        expert_agreement = np.std(confidences) if len(confidences) > 1 else 1.0
-        expert_agreement_score = max(0.0, 1.0 - expert_agreement)
-        
-        # Mathematical consistency based on formulation similarity
-        math_formulations = [e.mathematical_foundation for e in expert_analyses if e.mathematical_foundation]
-        math_consistency = 0.8 if len(set(math_formulations)) <= len(math_formulations) / 2 else 0.6
-        
-        # Path convergence
-        path_convergence = 1.0 / len(paths) if paths else 0.0
-        
-        return {
-            'expert_agreement_score': expert_agreement_score,
-            'mathematical_consistency': math_consistency,
-            'logical_consistency': 0.8,  # Default logical consistency
-            'path_convergence_score': path_convergence
-        }
-    
-    def _identify_contradictions(self, expert_analyses: List[ExpertPerspective]) -> List[Dict[str, Any]]:
-        """Identify contradictions between expert analyses"""
-        contradictions = []
-        
-        # Check for confidence contradictions
-        high_conf_experts = [e for e in expert_analyses if e.confidence > 0.8]
-        low_conf_experts = [e for e in expert_analyses if e.confidence < 0.3]
-        
-        if high_conf_experts and low_conf_experts:
-            contradictions.append({
-                'contradiction_type': 'confidence_disparity',
-                'conflicting_experts': [e.expert_type for e in high_conf_experts + low_conf_experts],
-                'severity': 0.6,
-                'resolution_strategy': 'Weight by domain relevance'
-            })
-        
-        return contradictions
-    
-    def _calculate_validation_metrics(self, solution: Dict[str, Any], 
-                                    expert_analyses: List[ExpertPerspective],
-                                    paths: List[UnifiedReasoningPath]) -> Dict[str, Dict[str, Any]]:
-        """Calculate comprehensive validation metrics"""
-        return {
-            'mathematical_validation': {
-                'dimensional_analysis': True,
-                'unit_consistency': True,
-                'numerical_stability': 0.9,
-                'convergence_criteria': 'Multi-expert consensus achieved'
+                    'patterns': e.hidden_patterns
+                } for e in expert_analyses
+            ],
+            'performance': {
+                'latency_seconds': 0.0,
+                'expert_count': solution.get('expert_count', len(expert_analyses)),
+                'path_count': len(paths)
             },
-            'logical_validation': {
-                'syllogistic_validity': True,
-                'consistency_check': True,
-                'contradiction_free': len(self._identify_contradictions(expert_analyses)) == 0,
-                'completeness_score': min(len(expert_analyses) / 8.0, 1.0)
-            },
-            'empirical_validation': {
-                'sanity_checks': ['Domain relevance verified', 'Mathematical soundness checked'],
-                'boundary_conditions': ['Edge cases considered', 'Limit behavior analyzed'],
-                'edge_case_analysis': ['Extreme values tested', 'Degenerate cases handled']
-            },
-            'meta_validation': {
-                'self_consistency': 0.85,
-                'expert_agreement': np.mean([e.confidence for e in expert_analyses]),
-                'robustness_score': 0.8
-            }
+            'conversation_history': history_manager.get_recent_history(10)
         }
-        
-    def reason(self, problem: str, enable_logging: bool = True) -> Dict[str, Any]:
-        """Main reasoning method with comprehensive logging"""
-        start_time = time.time()
-        
-        # Initialize session manager for logging
-        session_manager = None
-        if enable_logging:
-            session_manager = ReasoningSessionManager()
-            session_id = session_manager.start_reasoning_session(
-                problem, 
-                engine_version="1.0.0",
-                model_config={
-                    "primary_model": "gemini-1.5-pro",
-                    "temperature": 0.2,
-                    "max_tokens": 8192,
-                    "top_p": 0.9
-                }
-            )
-        
+
+    def _synthesize_final_user_answer(self, problem: str, detailed_solution: str) -> str:
+        """Takes the detailed internal solution and synthesizes a final, user-friendly answer."""
+        prompt = f"""
+You are an expert communicator. Your task is to take a detailed, step-by-step reasoning process and synthesize it into a clear, concise, and final answer for the end user.
+
+The user's original problem was:
+"{problem}"
+
+Here is the detailed, internal thinking process that solved the problem:
+---
+{detailed_solution}
+---
+
+Based on this process, provide a final, well-structured answer for the user. Focus on:
+1.  **Direct Answer:** Start with the most direct answer to the user's question.
+2.  **Key Insights:** Summarize the most important findings or steps in simple terms.
+3.  **Final Result:** Clearly state the final result, conclusion, or solution.
+
+Do not include the internal step-by-step thinking (WHAT, HOW, WHY, etc.). Format the output cleanly using markdown.
+"""
         try:
-            # Detect domain automatically
-            domain, domain_confidence = self.domain_detector.detect_domain(problem)
-            
-            # Analyze problem structure
-            problem_structure = self.analyze_problem_structure(problem)
-            
-            # Log input analysis
-            if session_manager:
-                session_manager.log_step("input_analysis", {
-                    "structural_analysis": {
-                        "token_count": problem_structure.get('token_count', 0),
-                        "unique_concepts": problem_structure.get('unique_concepts', 0),
-                        "entropy": problem_structure.get('entropy', 0.0),
-                        "complexity": problem_structure.get('complexity', 0.0),
-                        "mathematical_expressions": problem_structure.get('math_expressions', []),
-                        "graph_density": problem_structure.get('graph_density', 0.0),
-                        "concept_graph": {
-                            "node_count": problem_structure.get('concept_graph', nx.Graph()).number_of_nodes(),
-                            "edge_count": problem_structure.get('concept_graph', nx.Graph()).number_of_edges(),
-                            "density": problem_structure.get('graph_density', 0.0)
-                        }
-                    },
-                    "domain_detection": {
-                        "primary_domain": domain,
-                        "confidence_score": domain_confidence,
-                        "secondary_domains": [],
-                        "interdisciplinary_indicators": []
-                    },
-                    "complexity_metrics": {
-                        "cognitive_load": min(problem_structure.get('complexity', 0) * 10, 10),
-                        "mathematical_depth": len(problem_structure.get('math_expressions', [])),
-                        "reasoning_steps_estimate": max(3, len(problem_structure.get('math_expressions', [])) * 2),
-                        "uncertainty_level": 1.0 - domain_confidence
-                    }
-                })
-            
-            # Get all expert analyses
-            expert_analyses = []
-            for expert_name, expert in self.experts.items():
-                expert_start = time.time()
-                analysis = expert.analyze(problem, {'domain': domain, 'structure': problem_structure})
-                expert_time = time.time() - expert_start
-                
-                expert_analyses.append(analysis)
-                
-                # Log expert analysis
-                if session_manager:
-                    session_manager.log_step("expert_analysis", {
-                        "expert_type": expert_name,
-                        "analysis_results": {
-                            "key_insights": analysis.key_insights,
-                            "mathematical_foundation": analysis.mathematical_foundation,
-                            "recommended_approach": analysis.recommended_approach,
-                            "causal_chain": analysis.causal_chain,
-                            "hidden_patterns": analysis.hidden_patterns,
-                            "domain_specific_metrics": {"analysis_time": expert_time}
-                        },
-                        "confidence": analysis.confidence,
-                        "what_analysis": f"Expert {analysis.expert_type} identifies this as: {', '.join(analysis.key_insights[:2])}",
-                        "how_analysis": f"Approach: {analysis.recommended_approach}",
-                        "why_analysis": f"Mathematical foundation: {analysis.mathematical_foundation}"
-                    })
-                    
-                    session_manager.logger.track_performance("expert_analysis", expert_time)
-            
-            # Generate reasoning paths
-            paths_start = time.time()
-            paths = self.generate_reasoning_paths(problem, domain, expert_analyses)
-            paths_time = time.time() - paths_start
-            
-            # Log reasoning paths
-            if session_manager:
-                for path in paths:
-                    path_data = self._enhanced_path_to_dict(path)
-                    session_manager.log_step("reasoning_path", path_data)
-                    
-                session_manager.logger.track_performance("reasoning_paths", paths_time)
-            
-            # Synthesize final solution
-            synthesis_start = time.time()
-            solution = self.synthesize_solution(problem, paths, problem_structure)
-            synthesis_time = time.time() - synthesis_start
-            
-            # Calculate cross-validation metrics
-            consistency_metrics = self._calculate_consistency_metrics(expert_analyses, paths)
-            contradictions = self._identify_contradictions(expert_analyses)
-            
-            # Log synthesis and cross-validation
-            if session_manager:
-                session_manager.log_step("synthesis", {
-                    "final_answer": solution['synthesis'],
-                    "synthesis_process": {
-                        "what_synthesis": "Unified solution combining multiple expert perspectives",
-                        "how_synthesis": f"Integrated {len(expert_analyses)} expert analyses using weighted consensus",
-                        "why_synthesis": f"Mathematical rigor validated across {len(paths)} reasoning paths",
-                        "integration_method": "Multi-expert weighted consensus",
-                        "weighted_combination": {
-                            "weighting_scheme": "confidence-based",
-                            "expert_weights": {e.expert_type: e.confidence for e in expert_analyses},
-                            "combination_formula": "∑(wi * ai) / ∑wi where w=confidence, a=analysis"
-                        }
-                    },
-                    "confidence_assessment": {
-                        "overall_confidence": np.mean([e.confidence for e in expert_analyses]),
-                        "confidence_breakdown": {
-                            "mathematical_rigor": consistency_metrics.get("mathematical_consistency", 0.8),
-                            "logical_consistency": consistency_metrics.get("logical_consistency", 0.8),
-                            "expert_consensus": consistency_metrics.get("expert_agreement_score", 0.7),
-                            "empirical_support": 0.8
-                        },
-                        "uncertainty_sources": [
-                            {
-                                "source": "Domain ambiguity",
-                                "impact": 1.0 - domain_confidence,
-                                "mitigation": "Multi-domain analysis"
-                            }
-                        ]
-                    },
-                    "hidden_insights": [
-                        {
-                            "insight": pattern,
-                            "mathematical_basis": "Pattern recognition algorithms",
-                            "discovery_method": "Cross-expert analysis",
-                            "significance": 0.7
-                        }
-                        for expert in expert_analyses
-                        for pattern in expert.hidden_patterns
-                    ]
-                })
-                
-                # Log cross-validation
-                session_manager.logger.log_cross_validation(consistency_metrics, contradictions)
-                
-                session_manager.logger.track_performance("synthesis", synthesis_time)
-            
-            # Calculate final metrics
-            latency = time.time() - start_time
-            
-            # Log validation metrics
-            if session_manager:
-                validation_metrics = self._calculate_validation_metrics(solution, expert_analyses, paths)
-                session_manager.logger.log_validation_metrics(**validation_metrics)
-            
-            result = {
-                'problem': problem,
-                'detected_domain': domain,
-                'domain_confidence': domain_confidence,
-                'solution': solution['synthesis'],
-                'reasoning_paths': solution['reasoning_paths'],
-                'problem_metrics': {
-                    'entropy': problem_structure['entropy'],
-                    'complexity': problem_structure['complexity'],
-                    'token_count': problem_structure['token_count']
-                },
-                'expert_analyses': [
-                    {
-                        'expert': e.expert_type,
-                        'confidence': e.confidence,
-                        'insights': e.key_insights,
-                        'patterns': e.hidden_patterns
-                    }
-                    for e in expert_analyses
-                ],
-                'performance': {
-                    'latency_seconds': latency,
-                    'expert_count': solution['expert_count'],
-                    'path_count': len(paths)
-                },
-                'session_id': session_id if session_manager else None
-            }
-            
-            return result
-            
+            response = self.model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.3,
+                    max_output_tokens=2048
+                )
+            )
+            return response.text
         except Exception as e:
-            if session_manager:
-                session_manager.add_debug_info("error", str(e))
-            raise
-        finally:
-            # Session manager will auto-save on exit
-            if session_manager:
-                session_manager.__exit__(None, None, None)
+            return f"Error synthesizing final answer: {e}"
 
 # Initialize the unified engine
 unified_engine = UnifiedReasoningEngine()
 
 @app.route('/unified_reason', methods=['POST'])
 def unified_reason():
-    """API endpoint for unified reasoning"""
-    data = request.get_json()
+    """API endpoint for unified reasoning, now handles file uploads."""
+    if 'session_id' not in request.form:
+        return jsonify({'error': 'No session_id provided'}), 400
     
-    if not data or 'prompt' not in data:
+    prompt = request.form.get('prompt', '')
+    session_id = request.form.get('session_id')
+    
+    if not prompt:
         return jsonify({'error': 'No prompt provided'}), 400
-        
+
+    file_content = None
+    filename = None
+    if 'file' in request.files:
+        file = request.files['file']
+        if file.filename:
+            filename = file.filename
+            file_content = _extract_file_content(file)
+
     try:
-        result = unified_engine.reason(data['prompt'])
+        result = unified_engine.reason(
+            problem=prompt, 
+            session_id=session_id,
+            file_content=file_content,
+            filename=filename
+        )
         return jsonify(result)
     except Exception as e:
         print(f"Error in unified reasoning: {e}")

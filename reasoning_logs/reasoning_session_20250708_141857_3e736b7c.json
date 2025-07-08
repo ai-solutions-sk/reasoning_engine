@@ -1,0 +1,705 @@
+{
+  "session_metadata": {
+    "session_id": "3e736b7c-23c3-4ab5-a70a-dd7e9bae3e35",
+    "timestamp": "2025-07-08T08:33:40.341060Z",
+    "engine_version": "1.0.0",
+    "model_configuration": {
+      "primary_model": "gemini-1.5-pro",
+      "temperature": 0.2,
+      "max_tokens": 8192,
+      "top_p": 0.9
+    },
+    "environment": {
+      "python_version": "7.0.0",
+      "os": "posix",
+      "memory_available_gb": 1.3960723876953125
+    }
+  },
+  "input_analysis": {
+    "raw_prompt": "Three perfect logicians — Alice, Bob, and Carla — are each given a hat that is either red or blue. They can see the other two hats, but not their own. The game master tells them: 'At least one of your hats is red.' They take turns saying either 'I know my hat's color' or 'I don't know.' Alice: 'I don't know.' Bob: 'I don't know.' Carla: 'I know my hat is red.' What are the colors of each person's hat, and how did Carla reason it out?",
+    "preprocessed_prompt": "Three perfect logicians — Alice, Bob, and Carla — are each given a hat that is either red or blue. They can see the other two hats, but not their own. The game master tells them: 'At least one of your hats is red.' They take turns saying either 'I know my hat's color' or 'I don't know.' Alice: 'I don't know.' Bob: 'I don't know.' Carla: 'I know my hat is red.' What are the colors of each person's hat, and how did Carla reason it out?",
+    "structural_analysis": {
+      "token_count": 91,
+      "unique_concepts": 56,
+      "entropy": 5.587480288969526,
+      "complexity": 0.5827664399092971,
+      "mathematical_expressions": [],
+      "graph_density": 0.0512987012987013,
+      "concept_graph": {
+        "node_count": 56,
+        "edge_count": 79,
+        "density": 0.0512987012987013
+      }
+    },
+    "domain_detection": {
+      "primary_domain": "philosophy",
+      "confidence_score": 1.0,
+      "secondary_domains": [],
+      "interdisciplinary_indicators": []
+    },
+    "complexity_metrics": {
+      "cognitive_load": 5.827664399092971,
+      "mathematical_depth": 0,
+      "reasoning_steps_estimate": 3,
+      "uncertainty_level": 0.0
+    }
+  },
+  "reasoning_process": {
+    "expert_analyses": [
+      {
+        "expert_type": "mathematical_foundation",
+        "confidence_score": 0.3,
+        "analysis_results": {
+          "key_insights": [],
+          "mathematical_foundation": "",
+          "recommended_approach": "Apply foundational mathematical principles systematically",
+          "causal_chain": [],
+          "hidden_patterns": [],
+          "domain_specific_metrics": {
+            "analysis_time": 9.679794311523438e-05
+          }
+        },
+        "what_analysis": "Expert Mathematical Foundation identifies this as: ",
+        "how_analysis": "Approach: Apply foundational mathematical principles systematically",
+        "why_analysis": "Mathematical foundation: "
+      },
+      {
+        "expert_type": "negative_reasoning",
+        "confidence_score": 0.85,
+        "analysis_results": {
+          "key_insights": [
+            "Problem involves negative definitions"
+          ],
+          "mathematical_foundation": " | A = U \\ B (complement)",
+          "recommended_approach": "Identify constraints and impossibilities first",
+          "causal_chain": [],
+          "hidden_patterns": [],
+          "domain_specific_metrics": {
+            "analysis_time": 3.910064697265625e-05
+          }
+        },
+        "what_analysis": "Expert Negative Reasoning identifies this as: Problem involves negative definitions",
+        "how_analysis": "Approach: Identify constraints and impossibilities first",
+        "why_analysis": "Mathematical foundation:  | A = U \\ B (complement)"
+      },
+      {
+        "expert_type": "boundary_reasoning",
+        "confidence_score": 0.25,
+        "analysis_results": {
+          "key_insights": [],
+          "mathematical_foundation": "",
+          "recommended_approach": "Analyze critical points and boundary conditions",
+          "causal_chain": [],
+          "hidden_patterns": [],
+          "domain_specific_metrics": {
+            "analysis_time": 7.104873657226562e-05
+          }
+        },
+        "what_analysis": "Expert Boundary Reasoning identifies this as: ",
+        "how_analysis": "Approach: Analyze critical points and boundary conditions",
+        "why_analysis": "Mathematical foundation: "
+      },
+      {
+        "expert_type": "transitional_reasoning",
+        "confidence_score": 0.2,
+        "analysis_results": {
+          "key_insights": [],
+          "mathematical_foundation": "",
+          "recommended_approach": "Model as transformation or process",
+          "causal_chain": [],
+          "hidden_patterns": [],
+          "domain_specific_metrics": {
+            "analysis_time": 4.9114227294921875e-05
+          }
+        },
+        "what_analysis": "Expert Transitional Reasoning identifies this as: ",
+        "how_analysis": "Approach: Model as transformation or process",
+        "why_analysis": "Mathematical foundation: "
+      },
+      {
+        "expert_type": "positive_reasoning",
+        "confidence_score": 0.3,
+        "analysis_results": {
+          "key_insights": [],
+          "mathematical_foundation": "",
+          "recommended_approach": "Construct solutions and verify existence",
+          "causal_chain": [],
+          "hidden_patterns": [],
+          "domain_specific_metrics": {
+            "analysis_time": 6.4849853515625e-05
+          }
+        },
+        "what_analysis": "Expert Positive Reasoning identifies this as: ",
+        "how_analysis": "Approach: Construct solutions and verify existence",
+        "why_analysis": "Mathematical foundation: "
+      },
+      {
+        "expert_type": "emergent_reasoning",
+        "confidence_score": 0.15,
+        "analysis_results": {
+          "key_insights": [],
+          "mathematical_foundation": "",
+          "recommended_approach": "Analyze system-level properties and interactions",
+          "causal_chain": [],
+          "hidden_patterns": [],
+          "domain_specific_metrics": {
+            "analysis_time": 4.887580871582031e-05
+          }
+        },
+        "what_analysis": "Expert Emergent Reasoning identifies this as: ",
+        "how_analysis": "Approach: Analyze system-level properties and interactions",
+        "why_analysis": "Mathematical foundation: "
+      },
+      {
+        "expert_type": "logical_structure",
+        "confidence_score": 0.9,
+        "analysis_results": {
+          "key_insights": [
+            "Problem involves logical connectives"
+          ],
+          "mathematical_foundation": "∧, ∨, ¬, →, ↔ (logical operators)",
+          "recommended_approach": "Apply formal logical reasoning",
+          "causal_chain": [
+            "Premises → Logical inference → Conclusion"
+          ],
+          "hidden_patterns": [],
+          "domain_specific_metrics": {
+            "analysis_time": 4.076957702636719e-05
+          }
+        },
+        "what_analysis": "Expert Logical Structure identifies this as: Problem involves logical connectives",
+        "how_analysis": "Approach: Apply formal logical reasoning",
+        "why_analysis": "Mathematical foundation: ∧, ∨, ¬, →, ↔ (logical operators)"
+      },
+      {
+        "expert_type": "causal",
+        "confidence_score": 0.2,
+        "analysis_results": {
+          "key_insights": [],
+          "mathematical_foundation": "",
+          "recommended_approach": "Identify causal mechanisms and control confounding",
+          "causal_chain": [],
+          "hidden_patterns": [],
+          "domain_specific_metrics": {
+            "analysis_time": 4.57763671875e-05
+          }
+        },
+        "what_analysis": "Expert Causal Reasoning identifies this as: ",
+        "how_analysis": "Approach: Identify causal mechanisms and control confounding",
+        "why_analysis": "Mathematical foundation: "
+      },
+      {
+        "expert_type": "pattern",
+        "confidence_score": 0.3,
+        "analysis_results": {
+          "key_insights": [],
+          "mathematical_foundation": "",
+          "recommended_approach": "Identify patterns and apply analogical reasoning",
+          "causal_chain": [],
+          "hidden_patterns": [],
+          "domain_specific_metrics": {
+            "analysis_time": 4.506111145019531e-05
+          }
+        },
+        "what_analysis": "Expert Pattern Recognition identifies this as: ",
+        "how_analysis": "Approach: Identify patterns and apply analogical reasoning",
+        "why_analysis": "Mathematical foundation: "
+      }
+    ],
+    "reasoning_paths": [
+      {
+        "path_id": "unified_2980",
+        "reasoning_types": [
+          "negative_reasoning",
+          "deductive"
+        ],
+        "confidence": 0.875,
+        "complexity": 0,
+        "depth": 1,
+        "what": "WHAT: Analyzing Three perfect logicians — Alice, Bob, and Carla — ... through negative, positive reasoning dimensions. Key insights: Problem involves negative definitions, Problem involves logical connectives",
+        "how": "HOW: Applying 2 expert methodologies through 7 granular steps. Primary approaches: Identify constraints and impossibilities first, Apply formal logical reasoning",
+        "why": "WHY: Justified by foundational principles: Set Theory: Complement operation, Logic: Boolean algebra. Confidence: 0.88",
+        "when": "WHEN: This reasoning applies when constraints are present, when constructive solutions are needed",
+        "where": "WHERE: Valid in philosophy domain and contexts where 2 expert perspectives converge",
+        "who": "WHO: Involves entities: Three, Alice,, Bob, and 2 expert reasoning systems",
+        "which": "WHICH: Selecting optimal approach among 2 expert approaches: Negative Reasoning, Logical Structure based on confidence and domain fit",
+        "reasoning_steps": [
+          {
+            "step_id": "step_1",
+            "step_type": "what",
+            "description": "Understand the problem: Problem involves negative definitions, Problem involves logical connectives",
+            "mathematical_basis": "Problem formulation and constraint identification",
+            "logical_justification": "Multi-expert consensus on problem structure",
+            "confidence": 0.875,
+            "dependencies": [],
+            "outputs": [
+              "problem_understanding",
+              "constraint_identification"
+            ]
+          },
+          {
+            "step_id": "step_2",
+            "step_type": "how",
+            "description": "Apply solution approach: Identify constraints and impossibilities first",
+            "mathematical_basis": " | A = U \\ B (complement) ∧ ∧, ∨, ¬, →, ↔ (logical operators)",
+            "logical_justification": "Expert-recommended methodologies",
+            "confidence": 0.875,
+            "dependencies": [
+              "step_1"
+            ],
+            "outputs": [
+              "solution_methodology",
+              "mathematical_framework"
+            ]
+          },
+          {
+            "step_id": "step_3",
+            "step_type": "why",
+            "description": "Justify approach using: Set Theory: Complement operation, Logic: Boolean algebra",
+            "mathematical_basis": "Mathematical and logical foundations",
+            "logical_justification": "Consistency with established principles",
+            "confidence": 0.875,
+            "dependencies": [
+              "step_2"
+            ],
+            "outputs": [
+              "theoretical_justification",
+              "principle_validation"
+            ]
+          },
+          {
+            "step_id": "step_4",
+            "step_type": "when",
+            "description": "Determine when this reasoning applies",
+            "mathematical_basis": "Domain of validity and applicability conditions",
+            "logical_justification": "Expert domain knowledge and constraints",
+            "confidence": 0.875,
+            "dependencies": [
+              "step_2"
+            ],
+            "outputs": [
+              "applicability_conditions",
+              "domain_constraints"
+            ]
+          },
+          {
+            "step_id": "step_5",
+            "step_type": "where",
+            "description": "Identify where this reasoning is valid",
+            "mathematical_basis": "Spatial and contextual boundaries",
+            "logical_justification": "Scope and limitations of approach",
+            "confidence": 0.875,
+            "dependencies": [
+              "step_4"
+            ],
+            "outputs": [
+              "spatial_validity",
+              "contextual_boundaries"
+            ]
+          },
+          {
+            "step_id": "step_6",
+            "step_type": "who",
+            "description": "Identify entities and agents involved",
+            "mathematical_basis": "Entity modeling and agent identification",
+            "logical_justification": "Stakeholder and component analysis",
+            "confidence": 0.875,
+            "dependencies": [
+              "step_4"
+            ],
+            "outputs": [
+              "entity_identification",
+              "agent_analysis"
+            ]
+          },
+          {
+            "step_id": "step_7",
+            "step_type": "which",
+            "description": "Select among alternative approaches",
+            "mathematical_basis": "Decision theory and optimization",
+            "logical_justification": "Comparative analysis of alternatives",
+            "confidence": 0.875,
+            "dependencies": [
+              "step_4"
+            ],
+            "outputs": [
+              "alternative_selection",
+              "optimal_choice"
+            ]
+          }
+        ],
+        "expert_perspectives": [
+          {
+            "expert": "Negative Reasoning",
+            "confidence": 0.85,
+            "insights": [
+              "Problem involves negative definitions"
+            ],
+            "hidden_patterns": [],
+            "reasoning_dimension": "negative",
+            "foundational_principles": [
+              "Set Theory: Complement operation"
+            ]
+          },
+          {
+            "expert": "Logical Structure",
+            "confidence": 0.9,
+            "insights": [
+              "Problem involves logical connectives"
+            ],
+            "hidden_patterns": [],
+            "reasoning_dimension": "positive",
+            "foundational_principles": [
+              "Logic: Boolean algebra"
+            ]
+          }
+        ],
+        "step_by_step_process": [
+          {
+            "step_number": 1,
+            "operation": "Expert Negative Reasoning analysis",
+            "mathematical_expression": " | A = U \\ B (complement)",
+            "logical_justification": "Problem involves negative definitions",
+            "intermediate_result": "Confidence: 0.85",
+            "confidence": 0.85,
+            "reasoning_dimension": "negative",
+            "foundational_principles": [
+              "Set Theory: Complement operation"
+            ]
+          },
+          {
+            "step_number": 2,
+            "operation": "Expert Logical Structure analysis",
+            "mathematical_expression": "∧, ∨, ¬, →, ↔ (logical operators)",
+            "logical_justification": "Problem involves logical connectives",
+            "intermediate_result": "Confidence: 0.90",
+            "confidence": 0.9,
+            "reasoning_dimension": "positive",
+            "foundational_principles": [
+              "Logic: Boolean algebra"
+            ]
+          }
+        ],
+        "granular_reasoning_steps": [
+          {
+            "step_id": "step_1",
+            "step_type": "what",
+            "description": "Understand the problem: Problem involves negative definitions, Problem involves logical connectives",
+            "mathematical_basis": "Problem formulation and constraint identification",
+            "logical_justification": "Multi-expert consensus on problem structure",
+            "confidence": 0.875,
+            "dependencies": [],
+            "outputs": [
+              "problem_understanding",
+              "constraint_identification"
+            ]
+          },
+          {
+            "step_id": "step_2",
+            "step_type": "how",
+            "description": "Apply solution approach: Identify constraints and impossibilities first",
+            "mathematical_basis": " | A = U \\ B (complement) ∧ ∧, ∨, ¬, →, ↔ (logical operators)",
+            "logical_justification": "Expert-recommended methodologies",
+            "confidence": 0.875,
+            "dependencies": [
+              "step_1"
+            ],
+            "outputs": [
+              "solution_methodology",
+              "mathematical_framework"
+            ]
+          },
+          {
+            "step_id": "step_3",
+            "step_type": "why",
+            "description": "Justify approach using: Set Theory: Complement operation, Logic: Boolean algebra",
+            "mathematical_basis": "Mathematical and logical foundations",
+            "logical_justification": "Consistency with established principles",
+            "confidence": 0.875,
+            "dependencies": [
+              "step_2"
+            ],
+            "outputs": [
+              "theoretical_justification",
+              "principle_validation"
+            ]
+          },
+          {
+            "step_id": "step_4",
+            "step_type": "when",
+            "description": "Determine when this reasoning applies",
+            "mathematical_basis": "Domain of validity and applicability conditions",
+            "logical_justification": "Expert domain knowledge and constraints",
+            "confidence": 0.875,
+            "dependencies": [
+              "step_2"
+            ],
+            "outputs": [
+              "applicability_conditions",
+              "domain_constraints"
+            ]
+          },
+          {
+            "step_id": "step_5",
+            "step_type": "where",
+            "description": "Identify where this reasoning is valid",
+            "mathematical_basis": "Spatial and contextual boundaries",
+            "logical_justification": "Scope and limitations of approach",
+            "confidence": 0.875,
+            "dependencies": [
+              "step_4"
+            ],
+            "outputs": [
+              "spatial_validity",
+              "contextual_boundaries"
+            ]
+          },
+          {
+            "step_id": "step_6",
+            "step_type": "who",
+            "description": "Identify entities and agents involved",
+            "mathematical_basis": "Entity modeling and agent identification",
+            "logical_justification": "Stakeholder and component analysis",
+            "confidence": 0.875,
+            "dependencies": [
+              "step_4"
+            ],
+            "outputs": [
+              "entity_identification",
+              "agent_analysis"
+            ]
+          },
+          {
+            "step_id": "step_7",
+            "step_type": "which",
+            "description": "Select among alternative approaches",
+            "mathematical_basis": "Decision theory and optimization",
+            "logical_justification": "Comparative analysis of alternatives",
+            "confidence": 0.875,
+            "dependencies": [
+              "step_4"
+            ],
+            "outputs": [
+              "alternative_selection",
+              "optimal_choice"
+            ]
+          }
+        ],
+        "enhanced_explanations": {
+          "what": "WHAT: Analyzing Three perfect logicians — Alice, Bob, and Carla — ... through negative, positive reasoning dimensions. Key insights: Problem involves negative definitions, Problem involves logical connectives",
+          "how": "HOW: Applying 2 expert methodologies through 7 granular steps. Primary approaches: Identify constraints and impossibilities first, Apply formal logical reasoning",
+          "why": "WHY: Justified by foundational principles: Set Theory: Complement operation, Logic: Boolean algebra. Confidence: 0.88",
+          "when": "WHEN: This reasoning applies when constraints are present, when constructive solutions are needed",
+          "where": "WHERE: Valid in philosophy domain and contexts where 2 expert perspectives converge",
+          "who": "WHO: Involves entities: Three, Alice,, Bob, and 2 expert reasoning systems",
+          "which": "WHICH: Selecting optimal approach among 2 expert approaches: Negative Reasoning, Logical Structure based on confidence and domain fit"
+        }
+      }
+    ],
+    "cross_validation": {
+      "consistency_metrics": {
+        "expert_agreement_score": 0.7322936932631832,
+        "mathematical_consistency": 0.6,
+        "logical_consistency": 0.8,
+        "path_convergence_score": 1.0
+      },
+      "contradiction_analysis": [
+        {
+          "contradiction_type": "confidence_disparity",
+          "conflicting_experts": [
+            "Negative Reasoning",
+            "Logical Structure",
+            "Boundary Reasoning",
+            "Transitional Reasoning",
+            "Emergent Reasoning",
+            "Causal Reasoning"
+          ],
+          "severity": 0.6,
+          "resolution_strategy": "Weight by domain relevance"
+        }
+      ]
+    }
+  },
+  "mathematical_foundations": {
+    "linear_algebra_components": {},
+    "calculus_components": {},
+    "statistical_components": {},
+    "information_theory": {
+      "entropy_measures": {
+        "shannon_entropy": 4.322916690602963,
+        "conditional_entropy": 0.0,
+        "mutual_information": 0.0,
+        "kl_divergence": 0.0
+      },
+      "compression_analysis": {
+        "original_size": 441,
+        "compressed_size": 257,
+        "compression_ratio": 0.5827664399092971
+      }
+    }
+  },
+  "output_synthesis": {
+    "final_answer": "## WHAT: Problem Understanding\n\nThe problem asks us to determine the color of Alice, Bob, and Carla's hats, given that each person has either a red or blue hat, they can see the other two hats but not their own, at least one hat is red, and they each make a statement about their knowledge of their own hat's color in turn. We need to reconstruct Carla's reasoning to understand how she deduced her hat's color.\n\n## HOW: Solution Process\n\n**Step 1: Problem Formulation and Constraint Identification (WHAT)**\n\nWe are given the following constraints:\n* Each person has either a red or blue hat.\n* Each person can see the other two hats but not their own.\n* At least one hat is red.\n* Alice and Bob both state \"I don't know.\"\n* Carla states \"I know my hat is red.\"\n\n**Step 2: Applying Negative Reasoning (HOW)**\n\nWe start by considering what each person *cannot* know based on the information available to them.  If Alice sees two red hats, she would immediately know her hat is blue (since there's at least one red hat). Since she doesn't know, at least one of the hats Bob and Carla are wearing must be blue.\n\n**Step 3: Extending Negative Reasoning to Bob (WHY)**\n\nBob hears Alice's statement. He knows that if he sees two red hats, his must be blue.  Since he also says \"I don't know,\" this means that Carla's hat cannot be red *if* Bob's is red. In other words, if Bob sees a red hat on Alice and doesn't know his own hat color, Carla's must be blue.\n\n**Step 4: Carla's Deduction (WHEN)**\n\nCarla hears both Alice and Bob say \"I don't know.\"  Applying the logic from steps 2 and 3, Carla reasons as follows:\n* If my hat were blue, Alice would have seen two blue hats (Bob and Carla) and known hers was red.\n* Since Alice didn't know, at least one of Bob's or my hat is red.\n* If Bob saw Alice with a red hat, and me with a blue hat, he would know his hat was red (since at least one must be red).\n* Since Bob *also* didn't know, my hat cannot be blue.\n* Therefore, my hat must be red.\n\n**Steps 5-7 (WHERE, WHO, WHICH):** These steps are less directly applicable to the core logical deduction.  The \"where\" is a hypothetical scenario. The \"who\" is defined in the problem statement. The \"which\" involves choosing between possible hat color combinations, which is implicitly covered in the logical deduction.\n\n\n## WHY: Justification\n\nThe solution is justified by principles of deductive logic and negative reasoning. We systematically eliminate possibilities based on the knowledge and statements of each participant. The core principle is that if someone *doesn't* know something, it provides information about what they *can* see.\n\n## WHEN: Applicability\n\nThis solution applies to scenarios involving perfect logicians with complete knowledge of the rules and the ability to make flawless deductions. It also requires the specific constraint of at least one red hat.\n\n## WHERE: Validity\n\nThis solution is valid within the confines of the stated problem. It relies on the perfect rationality of the participants and the clearly defined rules of the game.\n\n## WHO: Entities\n\nThe entities involved are Alice, Bob, and Carla (the logicians), and the game master who sets the rules and provides the initial information.\n\n## WHICH: Alternatives\n\nThere are no alternative solutions that satisfy all the constraints and statements of the problem. The logical deduction leads to a unique solution.\n\n## HIDDEN INSIGHTS\n\nThe key insight is the power of negative reasoning.  By focusing on what *cannot* be true, we deduce what *must* be true.\n\n## FINAL ANSWER\n\nAlice: Blue\nBob: Blue\nCarla: Red\n\nConfidence: 1.0\n",
+    "synthesis_process": {
+      "what_synthesis": "Unified solution combining multiple expert perspectives",
+      "how_synthesis": "Integrated 9 expert analyses using weighted consensus",
+      "why_synthesis": "Mathematical rigor validated across 1 reasoning paths",
+      "integration_method": "Multi-expert weighted consensus",
+      "weighted_combination": {
+        "weighting_scheme": "confidence-based",
+        "expert_weights": {
+          "Mathematical Foundation": 0.3,
+          "Negative Reasoning": 0.85,
+          "Boundary Reasoning": 0.25,
+          "Transitional Reasoning": 0.2,
+          "Positive Reasoning": 0.3,
+          "Emergent Reasoning": 0.15,
+          "Logical Structure": 0.9,
+          "Causal Reasoning": 0.2,
+          "Pattern Recognition": 0.3
+        },
+        "combination_formula": "∑(wi * ai) / ∑wi where w=confidence, a=analysis"
+      }
+    },
+    "confidence_assessment": {
+      "overall_confidence": 0.3833333333333333,
+      "confidence_breakdown": {
+        "mathematical_rigor": 0.6,
+        "logical_consistency": 0.8,
+        "expert_consensus": 0.7322936932631832,
+        "empirical_support": 0.8
+      },
+      "uncertainty_sources": [
+        {
+          "source": "Domain ambiguity",
+          "impact": 0.0,
+          "mitigation": "Multi-domain analysis"
+        }
+      ]
+    },
+    "hidden_insights": [],
+    "alternative_solutions": []
+  },
+  "performance_metrics": {
+    "latency_metrics": {
+      "total_latency_seconds": 17.619593143463135,
+      "input_analysis_time": 0,
+      "expert_analysis_time": [
+        9.679794311523438e-05,
+        3.910064697265625e-05,
+        7.104873657226562e-05,
+        4.9114227294921875e-05,
+        6.4849853515625e-05,
+        4.887580871582031e-05,
+        4.076957702636719e-05,
+        4.57763671875e-05,
+        4.506111145019531e-05
+      ],
+      "reasoning_path_time": [
+        0.0005221366882324219
+      ],
+      "synthesis_time": [
+        17.608389854431152
+      ],
+      "llm_call_latencies": []
+    },
+    "computational_metrics": {
+      "memory_peak_mb": 120.796875,
+      "cpu_usage_percent": 0.0,
+      "token_consumption": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "expert_utilization": {
+        "linear_algebra": false,
+        "calculus": false,
+        "statistics": false,
+        "linear_programming": false,
+        "logic": false,
+        "causal": true,
+        "pattern": true,
+        "ai_scientist": false
+      }
+    },
+    "quality_metrics": {
+      "reasoning_depth": 2,
+      "mathematical_complexity": 0.0,
+      "cross_validation_score": 0.7322936932631832,
+      "novelty_score": 0.0
+    }
+  },
+  "validation_metrics": {
+    "mathematical_validation": {
+      "dimensional_analysis": true,
+      "unit_consistency": true,
+      "numerical_stability": 0.9,
+      "convergence_criteria": "Multi-expert consensus achieved"
+    },
+    "logical_validation": {
+      "syllogistic_validity": true,
+      "consistency_check": true,
+      "contradiction_free": false,
+      "completeness_score": 1.0
+    },
+    "empirical_validation": {
+      "sanity_checks": [
+        "Domain relevance verified",
+        "Mathematical soundness checked"
+      ],
+      "boundary_conditions": [
+        "Edge cases considered",
+        "Limit behavior analyzed"
+      ],
+      "edge_case_analysis": [
+        "Extreme values tested",
+        "Degenerate cases handled"
+      ]
+    },
+    "meta_validation": {
+      "self_consistency": 0.85,
+      "expert_agreement": 0.3833333333333333,
+      "robustness_score": 0.8
+    }
+  },
+  "traceability": {
+    "decision_tree": {},
+    "lineage": [
+      {
+        "output_component": "unified_2980",
+        "source_inputs": [
+          "Three perfect logicians — Alice, Bob, and Carla — are each given a hat that is either red or blue. They can see the other two hats, but not their own. The game master tells them: 'At least one of your hats is red.' They take turns saying either 'I know my hat's color' or 'I don't know.' Alice: 'I don't know.' Bob: 'I don't know.' Carla: 'I know my hat is red.' What are the colors of each person's hat, and how did Carla reason it out?"
+        ],
+        "transformation_path": [
+          "Expert Negative Reasoning analysis",
+          "Expert Logical Structure analysis"
+        ],
+        "confidence_propagation": [
+          0.85,
+          0.9
+        ]
+      }
+    ]
+  },
+  "metadata": {
+    "version_info": {
+      "schema_version": "1.0.0",
+      "engine_version": "1.0.0",
+      "dependencies": {
+        "numpy": "1.24.3",
+        "sympy": "1.12",
+        "scikit-learn": "1.3.0"
+      }
+    },
+    "debug_info": {
+      "warnings": [],
+      "errors": [],
+      "debug_traces": []
+    },
+    "reproducibility": {
+      "random_seed": 2147483648,
+      "deterministic_flags": {},
+      "environment_hash": "382a76a602a6e1d2a195e0693c13a1ae"
+    }
+  }
+}
